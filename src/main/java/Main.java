@@ -2,17 +2,17 @@ import core.FileInputSource;
 import core.InputSource;
 import core.Reporter;
 import core.Solver;
-import day01.Day01Solver;
+import day02.Day02Solver;
 
 public class Main {
 
     public static void main(String[] args) {
-        InputSource inputSource = new FileInputSource("day01.txt");
-        Solver solver = new Day01Solver(inputSource);
+        InputSource inputSource = new FileInputSource("day02.txt");
+        Solver solver = new Day02Solver(inputSource);
 
         Reporter reporter = new Reporter();
         reporter.print(
-                "Day 01",
+                "Day 02",
                 solver.solvePartOne(),
                 solver.solvePartTwo()
         );
