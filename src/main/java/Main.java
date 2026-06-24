@@ -8,7 +8,7 @@ public class Main {
 
     public static void main(String[] args) {
 
-        int day = 3;
+        int day = 4;
 
         InputSource inputSource =
                 new FileInputSource("day%02d.txt".formatted(day));
