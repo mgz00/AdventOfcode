@@ -8,6 +8,8 @@ import day05.Day05Solver;
 import day06.Day06Solver;
 import day07.Day07Solver;
 import day08.Day08Solver;
+import day09.Day09Solver;
+
 
 
 public final class SolverFactory {
@@ -25,6 +27,7 @@ public final class SolverFactory {
             case 6 -> new Day06Solver(inputSource);
             case 7 -> new Day07Solver(inputSource);
             case 8 -> new Day08Solver(inputSource);
+            case 9 -> new Day09Solver(inputSource);
 
             default -> throw new IllegalArgumentException(
                     "Day %02d not implemented".formatted(day)
