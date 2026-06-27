@@ -11,6 +11,7 @@ import day08.Day08Solver;
 import day09.Day09Solver;
 import day10.Day10Solver;
 import day11.Day11Solver;
+import day12.Day12Solver;
 
 
 
@@ -32,6 +33,7 @@ public final class SolverFactory {
             case 9 -> new Day09Solver(inputSource);
             case 10 -> new Day10Solver(inputSource);
             case 11 -> new Day11Solver(inputSource);
+            case 12 -> new Day12Solver(inputSource);
 
 
             default -> throw new IllegalArgumentException(
