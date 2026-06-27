@@ -10,7 +10,7 @@ public class CircuitNetwork {
     private final List<Connection> connections;
 
     public CircuitNetwork(List<JunctionBox> boxes) {
-        this.boxes = boxes;
+        this.boxes = List.copyOf(boxes);
         this.connections = generateConnections();
     }
 

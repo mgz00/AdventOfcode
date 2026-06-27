@@ -9,7 +9,7 @@ public class TheaterFloor {
     private final List<Tile> redTiles;
 
     public TheaterFloor(List<Tile> redTiles) {
-        this.redTiles = redTiles;
+        this.redTiles = List.copyOf(redTiles);
     }
 
     public long largestRectangleArea() {
