@@ -1,26 +1,32 @@
 package day03;
 
-public class MaxDozenJoltageStrategy implements JoltageStrategy {
+public class MaxJoltageStrategy implements JoltageStrategy {
 
-    private static final int REQUIRED_BATTERIES = 12;
+    private final int requiredBatteries;
+
+    public MaxJoltageStrategy(int requiredBatteries) {
+        this.requiredBatteries = requiredBatteries;
+    }
 
     @Override
     public long calculate(BatteryBank batteryBank) {
-        return findMaximumNumber(batteryBank.ratings(), REQUIRED_BATTERIES);
+        return findMaximumNumber(batteryBank.ratings());
     }
 
-    private long findMaximumNumber(String digits, int requiredDigits) {
+    private long findMaximumNumber(String digits) {
         StringBuilder result = new StringBuilder();
         int lastSelectedIndex = -1;
 
-        for (int position = 0; position < requiredDigits; position++) {
-            int remainingDigits = requiredDigits - position - 1;
+        for (int position = 0; position < requiredBatteries; position++) {
+
+            int remainingDigits = requiredBatteries - position - 1;
             int searchLimit = digits.length() - remainingDigits;
 
-            char bestDigit = '0' - 1;
+            char bestDigit = Character.MIN_VALUE;
             int bestIndex = -1;
 
             for (int index = lastSelectedIndex + 1; index < searchLimit; index++) {
+
                 char current = digits.charAt(index);
 
                 if (current > bestDigit) {

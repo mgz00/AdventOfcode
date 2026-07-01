@@ -7,6 +7,12 @@ import java.util.List;
 
 public class Day03Solver implements Solver {
 
+    private static final JoltageStrategy PART_ONE_STRATEGY =
+            new MaxJoltageStrategy(2);
+
+    private static final JoltageStrategy PART_TWO_STRATEGY =
+            new MaxJoltageStrategy(12);
+
     private final List<BatteryBank> batteryBanks;
 
     public Day03Solver(InputSource inputSource) {
@@ -19,17 +25,19 @@ public class Day03Solver implements Solver {
 
     @Override
     public String solvePartOne() {
-        return String.valueOf(sumUsing(new MaxPairJoltageStrategy()));
+        return solve(PART_ONE_STRATEGY);
     }
 
     @Override
     public String solvePartTwo() {
-        return String.valueOf(sumUsing(new MaxDozenJoltageStrategy()));
+        return solve(PART_TWO_STRATEGY);
     }
 
-    private long sumUsing(JoltageStrategy strategy) {
-        return batteryBanks.stream()
+    private String solve(JoltageStrategy strategy) {
+        long total = batteryBanks.stream()
                 .mapToLong(strategy::calculate)
                 .sum();
+
+        return String.valueOf(total);
     }
 }
