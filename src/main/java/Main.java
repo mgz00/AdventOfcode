@@ -1,8 +1,8 @@
-import core.FileInputSource;
-import core.InputSource;
-import core.Reporter;
-import core.Solver;
-import core.SolverFactory;
+import sofware.aoc.core.FileInputSource;
+import sofware.aoc.core.InputSource;
+import sofware.aoc.core.Reporter;
+import sofware.aoc.core.Solver;
+import sofware.aoc.core.SolverFactory;
 
 public class Main {
 
