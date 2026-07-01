@@ -42,10 +42,4 @@ public record Edge(Tile start, Tile end) {
         return false;
     }
 
-    public double intersectXAt(int y) {
-        return (double) (end.x() - start.x())
-                * (y - start.y())
-                / (end.y() - start.y())
-                + start.x();
-    }
 }
