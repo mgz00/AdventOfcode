@@ -2,62 +2,74 @@
 
 ## Objetivo
 
-El paquete `core` agrupa los componentes comunes utilizados por todas las soluciones del proyecto. Su finalidad es proporcionar una infraestructura reutilizable e independiente de cada reto, evitando duplicación de código y favoreciendo un diseño modular.
+El paquete **core** contiene la infraestructura común utilizada por todas las soluciones del proyecto. Su finalidad es proporcionar una arquitectura reutilizable para que cada día se centre exclusivamente en resolver el problema planteado, evitando duplicación de código y favoreciendo un diseño modular.
 
 ---
 
 ## Componentes
 
-### `Solver`
-
-Define la interfaz común que deben implementar todos los días del proyecto.
-
-Cada solución proporciona dos métodos:
-
-* `solvePartOne()`
-* `solvePartTwo()`
-
-Esto permite ejecutar cualquier día de forma uniforme, independientemente de su implementación interna.
+| Clase | Responsabilidad |
+|--------|-----------------|
+| `Solver` | Define el contrato común que deben implementar todos los días (`solvePartOne()` y `solvePartTwo()`). |
+| `InputSource` | Abstracción del origen de datos, desacoplando la lectura de la lógica de resolución. |
+| `FileInputSource` | Implementación de `InputSource` que obtiene la entrada desde los archivos del proyecto. |
+| `Reporter` | Muestra los resultados de cada solución con un formato uniforme. |
 
 ---
 
-### `InputSource`
+## Diseño y principios aplicados
 
-Abstracción responsable del acceso a los datos de entrada.
+### Dependency Inversion Principle (DIP)
 
-Al desacoplar la lectura del origen de datos, las soluciones no dependen de archivos concretos y pueden reutilizarse fácilmente con otras fuentes de información (por ejemplo, pruebas unitarias).
+Los solvers no dependen de archivos ni de mecanismos concretos de lectura, sino de la abstracción `InputSource`.
+
+Gracias a ello, la misma solución puede ejecutarse utilizando un fichero, una entrada simulada en los tests o cualquier otra fuente de datos sin modificar el código del solver.
+
+### Single Responsibility Principle (SRP)
+
+Cada clase posee una única responsabilidad:
+
+- `Solver` define el contrato.
+- `InputSource` abstrae la lectura de datos.
+- `FileInputSource` implementa esa lectura.
+- `Reporter` se ocupa únicamente de presentar los resultados.
+
+### Bajo acoplamiento
+
+La infraestructura queda completamente separada de la lógica de cada ejercicio.
+
+Los paquetes `dayXX` solo utilizan las abstracciones del paquete `core`, permitiendo que cada solución sea independiente del mecanismo de entrada o de presentación de resultados.
+
+### Reutilización
+
+Toda la funcionalidad común se implementa una única vez y es reutilizada por los doce ejercicios, evitando duplicación de código y manteniendo una estructura homogénea durante todo el proyecto.
 
 ---
 
-### `FileInputSource`
+## Arquitectura
 
-Implementación de `InputSource` encargada de leer la entrada desde un archivo del proyecto.
+Todos los días siguen la misma estructura:
 
-Centralizar esta funcionalidad evita repetir código de lectura en cada uno de los ejercicios.
+```text
+InputSource
+      │
+      ▼
+DayXXSolver
+      │
+      ▼
+Clases de dominio / Parsers / Algoritmos
+      │
+      ▼
+Resultado
+      │
+      ▼
+Reporter
+```
 
----
-
-### `Reporter`
-
-Responsable de mostrar los resultados obtenidos por cada solución.
-
-Su única responsabilidad es presentar la salida con un formato uniforme, manteniendo separada la lógica de presentación de la lógica de resolución.
-
----
-
-## Principios de Diseño Aplicados
-
-El paquete `core` sigue varios principios de diseño orientado a objetos:
-
-* **Single Responsibility Principle (SRP):** cada clase tiene una única responsabilidad.
-* **Dependency Inversion Principle (DIP):** los solvers dependen de la abstracción `InputSource`, no de una implementación concreta.
-* **Reutilización:** los componentes comunes se comparten entre todos los días del proyecto.
-* **Bajo acoplamiento:** las soluciones permanecen independientes de la infraestructura.
+Esta organización permite mantener una clara separación entre infraestructura, lógica de negocio y presentación.
 
 ---
 
 ## Conclusiones
 
-El paquete `core` constituye la base de la arquitectura del proyecto, proporcionando una infraestructura común para la lectura de datos, la ejecución de las soluciones y la presentación de resultados.
-
-Este diseño facilita el mantenimiento, mejora la reutilización del código y permite incorporar nuevos ejercicios siguiendo siempre la misma estructura.
+El paquete **core** constituye la base de la arquitectura del proyecto. Gracias al uso de abstracciones, responsabilidades bien definidas y componentes reutilizables, proporciona una infraestructura sencilla, mantenible y fácilmente extensible para todas las soluciones del Advent of Code.

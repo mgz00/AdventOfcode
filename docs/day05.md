@@ -1,39 +1,73 @@
-# DÍA 05: Ingredient Inventory
+# Día 5: Ingredient Inventory
 
-## 1. Modelado del Problema
+## Enunciado
 
-**Enfoque: Objetos de Dominio y SRP.**
+El quinto problema trabaja con una base de datos de ingredientes. La entrada contiene dos secciones:
 
-La solución se divide en tres componentes principales:
+1. Una lista de rangos de IDs que representan ingredientes frescos.
+2. Una lista de IDs disponibles que deben comprobarse.
 
-* `IngredientRange`: representa un rango de IDs frescos.
-* `InventoryDatabase`: interpreta el fichero de entrada y separa rangos e IDs disponibles.
-* `RangeMerger`: fusiona rangos solapados o adyacentes.
+Un ingrediente se considera fresco si su ID pertenece al menos a uno de los rangos indicados.
 
-Cada clase tiene una única responsabilidad, facilitando el mantenimiento y la reutilización del código.
-
----
-
-## 2. Fusión de Rangos
-
-**Enfoque: Evitar Duplicidad de Información.**
-
-Para la segunda parte, los rangos se ordenan y se recorren una única vez, fusionando aquellos que se solapan o son consecutivos.
-
-Esto simplifica el cálculo del número total de IDs frescos y evita contar valores repetidos.
+- **Parte 1:** contar cuántos de los IDs disponibles son frescos.
+- **Parte 2:** calcular cuántos IDs frescos existen en total teniendo en cuenta todos los rangos, evitando contar dos veces las zonas solapadas.
 
 ---
 
-## 3. Uso de Streams
+## Algoritmos y técnicas
 
-**Enfoque: Procesamiento Declarativo.**
+- **Comprobación de pertenencia a rangos:** cada ID disponible se compara contra los rangos frescos.
+- **Fusión de rangos:** los rangos solapados o adyacentes se combinan para evitar duplicados.
+- **Ordenación + barrido lineal:** la parte 2 ordena los rangos y los recorre una sola vez para fusionarlos.
+- **Streams:** utilizados para contar IDs frescos y sumar la longitud de los rangos fusionados.
 
-Los Streams se utilizan para:
+---
 
-* Contar los IDs disponibles que pertenecen a algún rango.
-* Calcular la longitud total de los rangos fusionados.
+## Modelado en clases
 
-Pipeline principal:
+| Clase | Responsabilidad |
+|--------|-----------------|
+| `IngredientRange` | Representa un rango cerrado de IDs frescos, permite comprobar pertenencia y calcular su longitud. |
+| `InventoryDatabase` | Interpreta la entrada y separa los rangos frescos de los IDs disponibles. |
+| `RangeMerger` | Fusiona rangos solapados o adyacentes. |
+| `Day05Solver` | Coordina la resolución de ambas partes. |
+
+---
+
+## Diseño y principios aplicados
+
+### Single Responsibility Principle (SRP)
+
+Cada clase tiene una única razón para cambiar:
+
+- `IngredientRange` cambia si cambia la representación de un rango.
+- `InventoryDatabase` cambia si cambia el formato de entrada.
+- `RangeMerger` cambia si cambia la lógica de fusión.
+- `Day05Solver` solo coordina el flujo de resolución.
+
+### DRY
+
+La lógica de fusión de rangos se extrae a `RangeMerger`, evitando mezclarla con el solver y permitiendo reutilizarla de forma independiente.
+
+### Tell, Don't Ask
+
+El solver no extrae manualmente los límites de un rango para decidir si un ID pertenece a él. En su lugar delega en el propio objeto:
+
+```java
+range.contains(ingredientId)
+```
+
+### Dependency Inversion Principle (DIP)
+
+El solver recibe un `InputSource` por constructor, por lo que no depende directamente de archivos.
+
+### Inmutabilidad
+
+`IngredientRange` se modela como `record`, y `InventoryDatabase` devuelve copias inmutables mediante `List.copyOf`, protegiendo su estado interno.
+
+### Streams
+
+La parte 1 utiliza Streams para contar IDs frescos:
 
 ```java
 database.availableIds().stream()
@@ -41,25 +75,13 @@ database.availableIds().stream()
         .count();
 ```
 
----
-
-## 4. Inyección de Dependencias
-
-**Enfoque: Dependency Inversion Principle (DIP).**
-
-El solver recibe una implementación de `InputSource` mediante constructor.
-
-Esto desacopla la lógica del problema del origen de los datos y facilita la realización de pruebas unitarias.
+La parte 2 utiliza Streams para sumar la longitud de los rangos fusionados.
 
 ---
 
-## 5. Conclusiones
+## Resultados
 
-La solución prioriza:
-
-* Separación de responsabilidades.
-* Reutilización mediante una clase específica para fusionar rangos.
-* Uso de Streams.
-* Bajo acoplamiento entre componentes.
-
-El resultado es un diseño sencillo, modular y fácilmente extensible.
+| Parte | Respuesta |
+|--------|-----------|
+| 1 | **643** |
+| 2 | **342018167474526** |

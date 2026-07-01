@@ -1,73 +1,79 @@
-# DÍA 02: Invalid Product IDs
+# Día 2: Invalid Product IDs
 
-## 1. Modelado del Dominio
+## Enunciado
 
-**Enfoque: Separación de Responsabilidades (SRP).**
+El segundo problema trabaja con un catálogo de rangos de IDs de producto. La entrada contiene intervalos cerrados separados por comas, como `100-200,500-600`.
 
-El problema se dividió en dos conceptos principales:
+Cada rango se expande conceptualmente en todos sus IDs y se comprueba si cada número cumple un patrón de repetición en sus dígitos.
 
-* `ProductId`: representa un identificador y contiene las reglas de validación.
-* `ProductIdRange`: representa un rango de IDs y encapsula la generación de valores.
+- **Parte 1:** un ID es inválido si tiene longitud par y está formado por dos mitades idénticas, por ejemplo `1212` o `6464`.
+- **Parte 2:** un ID es inválido si está formado por la repetición de cualquier subpatrón, por ejemplo `1111`, `123123` o `121212`.
 
-De esta forma se evita concentrar toda la lógica en el solver.
-
----
-
-## 2. Reutilización de la Lógica de Validación
-
-**Enfoque: Evitar Duplicación (DRY).**
-
-Las dos partes del ejercicio comparten la misma idea: comprobar si un ID está formado por repeticiones de un patrón.
-
-Para evitar duplicar código, ambas validaciones reutilizan el método privado `isRepeatedPattern`.
-
-La diferencia entre las partes se reduce únicamente al tamaño del patrón que se permite comprobar.
+El resultado de cada parte es la suma de todos los IDs inválidos encontrados.
 
 ---
 
-## 3. Uso de Streams
+## Algoritmos y técnicas
 
-**Enfoque: Procesamiento Declarativo.**
+- **Expansión de rangos:** cada `ProductIdRange` genera sus valores mediante `LongStream.rangeClosed`.
+- **Detección de patrones repetidos:** se comprueba si una cadena puede dividirse en fragmentos iguales.
+- **Reutilización de lógica:** la parte 1 es un caso concreto de la lógica de patrones de la parte 2.
+- **Higher-order programming:** el método común `sumMatching(...)` recibe un `Predicate<ProductId>` para reutilizar el flujo de cálculo.
 
-La solución utiliza Streams para:
+---
 
-* Transformar la entrada en objetos de dominio.
-* Expandir los rangos de IDs.
-* Filtrar los identificadores inválidos.
-* Calcular la suma final.
+## Modelado en clases
 
-Pipeline principal:
+| Clase | Responsabilidad |
+|--------|-----------------|
+| `ProductId` | Representa un ID de producto y contiene la lógica para detectar patrones inválidos. |
+| `ProductIdRange` | Representa un rango cerrado de IDs y permite expandirlo a un `LongStream`. |
+| `Day02Solver` | Lee los rangos, coordina ambas partes y suma los IDs que cumplen cada condición. |
+
+---
+
+## Diseño y principios aplicados
+
+### Single Responsibility Principle (SRP)
+
+Cada clase tiene una única responsabilidad:
+
+- `ProductId` valida el patrón del ID.
+- `ProductIdRange` modela y expande rangos.
+- `Day02Solver` coordina la resolución.
+
+### DRY
+
+La lógica común de suma se centraliza en `sumMatching(...)`, evitando duplicar el recorrido de los rangos en ambas partes.
 
 ```java
-ranges.stream()
-      .flatMapToLong(ProductIdRange::values)
-      .mapToObj(ProductId::new)
-      .filter(...)
-      .mapToLong(ProductId::value)
-      .sum();
+private long sumMatching(Predicate<ProductId> validator) {
+    return ranges.stream()
+            .flatMapToLong(ProductIdRange::values)
+            .mapToObj(ProductId::new)
+            .filter(validator)
+            .mapToLong(ProductId::value)
+            .sum();
+}
 ```
 
-Esto permite expresar claramente el flujo de datos sin estructuras de control complejas.
+### Dependency Inversion Principle (DIP)
+
+El solver recibe un `InputSource` por constructor, por lo que no depende directamente de archivos ni de una implementación concreta de entrada.
+
+### Inmutabilidad
+
+`ProductId` y `ProductIdRange` se implementan como `record`, representando datos de dominio inmutables.
+
+### Streams
+
+Los Streams se utilizan para procesar la entrada, expandir rangos, filtrar IDs inválidos y calcular la suma final de forma declarativa.
 
 ---
 
-## 4. Inyección de Dependencias
+## Resultados
 
-**Enfoque: Dependency Inversion Principle (DIP).**
-
-El solver recibe una implementación de `InputSource` mediante constructor.
-
-De esta forma la lógica de resolución no depende de archivos concretos y puede reutilizarse con cualquier origen de datos.
-
----
-
-## 5. Conclusiones
-
-La solución prioriza:
-
-* Separación de responsabilidades.
-* Reutilización de código.
-* Uso de Streams.
-* Bajo acoplamiento mediante abstracciones.
-
-El resultado es un código sencillo de mantener y fácil de extender para futuras variantes del problema.
+| Parte | Respuesta |
+|--------|-----------|
+| 1 | **19219508902** |
+| 2 | **27180728081** |

@@ -1,75 +1,88 @@
-# DÍA 12: Christmas Tree Farm
+# Día 12: Christmas Tree Farm
 
-## 1. Modelado del Problema
+## Enunciado
 
-**Enfoque: Separación de Responsabilidades (SRP).**
+El duodécimo problema trabaja con formas de regalos y regiones rectangulares bajo los árboles de Navidad.
 
-La solución se divide en varios componentes:
+La entrada contiene dos partes:
 
-* `GiftShape`: representa una forma de regalo y genera todas sus rotaciones y simetrías válidas.
-* `RegionRequest`: representa una región y las cantidades de cada tipo de regalo.
-* `FarmParser`: interpreta el fichero de entrada y construye las formas y las regiones.
-* `PackingEngine`: implementa el algoritmo de colocación mediante backtracking.
-* `Day12Solver`: coordina la resolución del problema.
+1. Un catálogo de formas de regalos, representadas con `#` y `.`.
+2. Una lista de regiones, indicando sus dimensiones y cuántos regalos de cada tipo deben colocarse.
 
-Cada clase tiene una única responsabilidad, facilitando el mantenimiento y la reutilización del código.
+Los regalos pueden rotarse y reflejarse, pero deben colocarse sobre una cuadrícula sin solaparse.
 
----
-
-## 2. Algoritmo de Colocación
-
-**Enfoque: Backtracking.**
-
-Para cada región se genera la lista de regalos necesarios y se intenta colocarlos sobre el tablero.
-
-El algoritmo:
-
-* Genera todas las rotaciones y simetrías únicas de cada pieza.
-* Coloca recursivamente cada regalo.
-* Si una colocación impide completar la solución, realiza **backtracking** y prueba otra alternativa.
-
-Además, antes de comenzar se verifica que el área total de las piezas no supere el área disponible de la región.
+- **Parte 1:** contar cuántas regiones pueden contener todos los regalos indicados.
+- **Parte 2:** este día no incluye segunda parte en el proyecto.
 
 ---
 
-## 3. Uso de Streams
+## Algoritmos y técnicas
 
-**Enfoque: Procesamiento Declarativo.**
+- **Backtracking:** se prueban distintas posiciones y orientaciones para cada regalo.
+- **Rotaciones y simetrías:** cada forma genera sus variantes únicas para considerar todas las colocaciones válidas.
+- **Poda por área:** antes de iniciar la búsqueda se descartan regiones cuya superficie no puede contener todas las piezas.
+- **Ordenación por tamaño:** las piezas se intentan colocar de mayor a menor área para reducir el espacio de búsqueda.
+- **Streams:** utilizados para expandir cantidades, calcular áreas y contar regiones válidas.
 
-Los Streams se utilizan para:
+---
 
-* Leer y parsear las figuras.
-* Expandir las cantidades de regalos requeridos.
-* Generar las variantes de cada pieza.
-* Contar cuántas regiones admiten todas las piezas.
+## Modelado en clases
 
-Pipeline principal:
+| Clase | Responsabilidad |
+|--------|-----------------|
+| `GiftShape` | Representa una forma de regalo, calcula su área y genera sus variantes por rotación o simetría. |
+| `RegionRequest` | Representa una región y las cantidades requeridas de cada tipo de regalo. |
+| `FarmParser` | Interpreta la entrada, separando las formas de regalo y las regiones. |
+| `PackingEngine` | Implementa el algoritmo de colocación mediante backtracking. |
+| `Day12Solver` | Expande los regalos requeridos y coordina la resolución del día. |
+
+---
+
+## Diseño y principios aplicados
+
+### Single Responsibility Principle (SRP)
+
+Cada clase mantiene una responsabilidad clara:
+
+- `GiftShape` gestiona la geometría de una pieza.
+- `RegionRequest` modela la petición de una región.
+- `FarmParser` se encarga exclusivamente del parseo.
+- `PackingEngine` encapsula el algoritmo de búsqueda.
+- `Day12Solver` coordina el proceso.
+
+### Encapsulación
+
+La lógica de colocación queda oculta dentro de `PackingEngine`.
+
+El solver no manipula directamente el tablero, sino que delega en:
 
 ```java
-regions.stream()
-        .filter(this::canFitRegion)
-        .count();
+engine.canFit(requiredPieces)
 ```
 
+### DRY
+
+La generación de variantes de una forma se concentra en `GiftShape`, y el motor de colocación se reutiliza para todas las regiones.
+
+### Dependency Inversion Principle (DIP)
+
+`Day12Solver` recibe un `InputSource` mediante constructor, manteniendo la lógica del problema desacoplada del origen de los datos.
+
+### Inmutabilidad
+
+`RegionRequest` se implementa como `record`, y protege la lista de cantidades mediante `List.copyOf`.
+
+`GiftShape` realiza copia defensiva del array de celdas para evitar modificaciones externas.
+
+### Streams
+
+Los Streams se utilizan para calcular áreas, generar variantes, expandir regalos y contar las regiones que pueden resolverse.
+
 ---
 
-## 4. Inyección de Dependencias
+## Resultados
 
-**Enfoque: Dependency Inversion Principle (DIP).**
-
-El solver recibe una implementación de `InputSource` mediante constructor.
-
-La lectura de la entrada queda desacoplada del algoritmo de empaquetado, facilitando las pruebas unitarias y la reutilización del motor de búsqueda.
-
----
-
-## 5. Conclusiones
-
-La solución prioriza:
-
-* Separación de responsabilidades.
-* Uso de backtracking para explorar las posibles colocaciones.
-* Uso de Streams.
-* Bajo acoplamiento entre componentes.
-
-El resultado es un diseño modular, reutilizable y fácilmente ampliable para otros problemas de búsqueda y empaquetado.
+| Parte | Respuesta |
+|--------|-----------|
+| 1 | **454** |
+| 2 | **—** |

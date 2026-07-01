@@ -1,46 +1,65 @@
-# DÍA 03: Battery Banks
+# Día 3: Battery Banks
 
-## 1. Diseño de la Solución
+## Enunciado
 
-**Enfoque: Patrón Strategy y Responsabilidad Única (SRP).**
+El tercer problema trabaja con bancos de baterías representados como líneas de dígitos. Cada dígito indica la potencia de una batería, y el orden de los dígitos no puede modificarse.
 
-El problema se dividió en tres conceptos principales:
+En cada banco se deben seleccionar ciertos dígitos para formar el mayor número posible respetando el orden original.
 
-* `BatteryBank`: representa una línea de baterías.
-* `JoltageStrategy`: define una estrategia para calcular el mayor número posible.
-* `Day03Solver`: coordina la lectura de datos y la suma de resultados.
+- **Parte 1:** se seleccionan 2 baterías para formar el mayor número de dos cifras posible.
+- **Parte 2:** se seleccionan 12 baterías para formar el mayor número posible de doce cifras.
 
-Esta separación evita mezclar la lógica de cálculo con la lógica de lectura y procesamiento.
-
----
-
-## 2. Patrón Strategy
-
-**Enfoque: Open/Closed Principle (OCP).**
-
-Las reglas de la Parte 1 y la Parte 2 son diferentes, pero ambas siguen el mismo flujo de ejecución.
-
-Para desacoplar ambas soluciones se utiliza la interfaz `JoltageStrategy`, permitiendo intercambiar algoritmos sin modificar el solver.
-
-Estrategias implementadas:
-
-* `MaxPairJoltageStrategy` → Parte 1.
-* `MaxDozenJoltageStrategy` → Parte 2.
+El resultado final es la suma de los máximos obtenidos para todos los bancos.
 
 ---
 
-## 3. Uso de Streams
+## Algoritmos y técnicas
 
-**Enfoque: Procesamiento Declarativo.**
+- **Greedy:** en cada posición del resultado se selecciona el mayor dígito posible dejando suficientes dígitos restantes para completar el número.
+- **Búsqueda acotada:** el algoritmo no revisa posiciones que impedirían completar el número final.
+- **Strategy configurable:** se utiliza una estrategia parametrizada por el número de baterías requeridas.
+- **Streams:** se utilizan para transformar las líneas de entrada en bancos de baterías y sumar los resultados.
 
-La solución utiliza Streams para:
+---
 
-* Leer las líneas de entrada.
-* Transformarlas en objetos de dominio.
-* Aplicar la estrategia correspondiente.
-* Obtener la suma final.
+## Modelado en clases
 
-Pipeline principal:
+| Clase | Responsabilidad |
+|--------|-----------------|
+| `BatteryBank` | Representa una línea de baterías y sus valores. |
+| `JoltageStrategy` | Define la abstracción común para calcular la máxima joltage de un banco. |
+| `MaxJoltageStrategy` | Implementa el algoritmo greedy parametrizado por el número de baterías a seleccionar. |
+| `Day03Solver` | Lee la entrada, aplica la estrategia correspondiente a cada parte y suma los resultados. |
+
+---
+
+## Diseño y principios aplicados
+
+### Single Responsibility Principle (SRP)
+
+Cada clase tiene una responsabilidad clara:
+
+- `BatteryBank` representa el dato de entrada.
+- `MaxJoltageStrategy` contiene el algoritmo de selección.
+- `Day03Solver` coordina la ejecución.
+
+### Open/Closed Principle (OCP)
+
+El solver trabaja contra la abstracción `JoltageStrategy`. Esto permite cambiar o añadir nuevas estrategias sin modificar la lógica principal del solver.
+
+### DRY
+
+Inicialmente las partes 1 y 2 podían modelarse como clases distintas, pero al detectar que solo cambiaba el número de baterías requeridas, se refactorizó a una única clase `MaxJoltageStrategy` parametrizable.
+
+Esto evita duplicar el algoritmo y facilita el mantenimiento.
+
+### Dependency Inversion Principle (DIP)
+
+El solver recibe un `InputSource` por constructor, por lo que la lógica de resolución queda desacoplada del origen concreto de los datos.
+
+### Streams
+
+El flujo principal de resolución se expresa mediante Streams:
 
 ```java
 batteryBanks.stream()
@@ -50,23 +69,9 @@ batteryBanks.stream()
 
 ---
 
-## 4. Inyección de Dependencias
+## Resultados
 
-**Enfoque: Dependency Inversion Principle (DIP).**
-
-El solver recibe una implementación de `InputSource` mediante constructor.
-
-Esto permite desacoplar la lógica del problema del origen concreto de los datos y facilita la realización de pruebas unitarias.
-
----
-
-## 5. Conclusiones
-
-La solución prioriza:
-
-* Separación de responsabilidades.
-* Reutilización mediante el patrón Strategy.
-* Uso de Streams.
-* Bajo acoplamiento entre componentes.
-
-Esto permite añadir nuevas estrategias de cálculo sin modificar el flujo principal de resolución.
+| Parte | Respuesta |
+|--------|-----------|
+| 1 | **17034** |
+| 2 | **168798209663590** |

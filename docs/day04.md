@@ -1,87 +1,83 @@
-# DÍA 04: Paper Rolls
+# Día 4: Paper Rolls
 
-## 1. Modelado del Problema
+## Enunciado
 
-**Enfoque: Objetos de Dominio y SRP.**
+El cuarto problema trabaja con una cuadrícula que representa rollos de papel. Cada posición puede estar vacía (`.`) o contener un rollo (`@`).
 
-La solución se divide en dos conceptos principales:
+Un rollo puede ser retirado por una carretilla si tiene menos de cuatro rollos en sus ocho posiciones adyacentes.
 
-* `Position`: representa una coordenada dentro de la cuadrícula.
-* `Grid`: encapsula el estado de la matriz y las operaciones sobre ella.
-
-De esta forma se evita trabajar directamente con arrays bidimensionales desde el solver.
+- **Parte 1:** contar cuántos rollos son accesibles inicialmente.
+- **Parte 2:** retirar por rondas todos los rollos accesibles. Tras cada retirada pueden aparecer nuevos rollos accesibles. El objetivo es contar cuántos rollos se pueden retirar en total.
 
 ---
 
-## 2. Encapsulación de la Cuadrícula
+## Algoritmos y técnicas
 
-**Enfoque: Responsabilidad Única.**
-
-La clase `Grid` es responsable de:
-
-* Comprobar si existe un rollo de papel en una posición.
-* Contar los vecinos adyacentes.
-* Eliminar rollos de papel.
-* Gestionar los límites de la cuadrícula.
-
-Esto evita duplicar comprobaciones de índices en el resto de la aplicación.
+- **Recorrido de cuadrícula:** se generan todas las posiciones posibles del tablero.
+- **Conteo de vecinos:** para cada rollo se revisan sus ocho posiciones adyacentes.
+- **Simulación iterativa:** en la segunda parte se repite el proceso de búsqueda y eliminación hasta que no quedan candidatos.
+- **Eliminación por rondas:** los rollos accesibles se detectan primero y se eliminan después, evitando alterar el estado durante la misma ronda.
 
 ---
 
-## 3. Uso de Streams
+## Modelado en clases
 
-**Enfoque: Procesamiento Declarativo.**
+| Clase | Responsabilidad |
+|--------|-----------------|
+| `Position` | Representa una coordenada de la cuadrícula. |
+| `Grid` | Encapsula el tablero, el acceso a sus posiciones, el conteo de vecinos y la eliminación de rollos. |
+| `Day04Solver` | Lee la entrada, crea el grid y coordina la resolución de ambas partes. |
 
-La cuadrícula expone todas sus posiciones mediante un Stream.
+---
 
-Pipeline principal:
+## Diseño y principios aplicados
+
+### Single Responsibility Principle (SRP)
+
+Cada clase tiene una responsabilidad concreta:
+
+- `Position` representa una coordenada.
+- `Grid` gestiona el estado y las operaciones sobre la cuadrícula.
+- `Day04Solver` coordina el flujo de resolución.
+
+### Encapsulación
+
+El acceso al array interno queda oculto dentro de `Grid`.
+
+El solver no manipula directamente la matriz, sino que utiliza métodos del dominio como:
+
+```java
+grid.hasPaperRollAt(position)
+grid.countAdjacentPaperRolls(position)
+grid.removePaperRollAt(position)
+```
+
+### Dependency Inversion Principle (DIP)
+
+El solver recibe un `InputSource` por constructor, por lo que no depende de archivos concretos.
+
+### Streams
+
+`Grid` expone sus posiciones mediante un stream, lo que permite expresar la búsqueda de rollos accesibles de forma declarativa:
 
 ```java
 grid.positions()
-    .filter(grid::hasPaperRollAt)
-    .filter(...)
-    .toList();
+        .filter(grid::hasPaperRollAt)
+        .filter(position -> grid.countAdjacentPaperRolls(position) <= 3)
+        .toList();
 ```
 
-Esto permite localizar los rollos accesibles de forma clara y reutilizable.
+### Mutabilidad controlada
+
+A diferencia de otros días, `Grid` necesita mantener estado mutable para la simulación de la segunda parte.
+
+La mutabilidad queda encapsulada dentro de la propia clase y solo se modifica mediante `removePaperRollAt`.
 
 ---
 
-## 4. Simulación Iterativa
+## Resultados
 
-**Parte 1**
-
-Se cuentan los rollos de papel que tienen menos de cuatro vecinos adyacentes.
-
-**Parte 2**
-
-Se realiza una simulación por rondas:
-
-1. Identificar todos los rollos accesibles.
-2. Eliminarlos simultáneamente.
-3. Repetir hasta que no existan más candidatos.
-
-La lógica de búsqueda se reutiliza en ambas partes mediante un método común.
-
----
-
-## 5. Inyección de Dependencias
-
-**Enfoque: Dependency Inversion Principle (DIP).**
-
-El solver recibe una implementación de `InputSource` mediante constructor.
-
-Esto desacopla la resolución del problema del origen concreto de los datos y facilita las pruebas unitarias.
-
----
-
-## 6. Conclusiones
-
-La solución prioriza:
-
-* Encapsulación de la matriz.
-* Separación de responsabilidades.
-* Uso de Streams.
-* Reutilización de lógica entre ambas partes.
-
-El resultado es un diseño sencillo, mantenible y fácil de extender.
+| Parte | Respuesta |
+|--------|-----------|
+| 1 | **1349** |
+| 2 | **8277** |

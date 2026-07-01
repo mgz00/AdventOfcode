@@ -1,70 +1,70 @@
-# DÍA 07: Tachyon Manifold
+# Día 7: Tachyon Manifold
 
-## 1. Modelado del Problema
+## Enunciado
 
-**Enfoque: Separación de Responsabilidades (SRP).**
+El séptimo problema simula la propagación de un haz de taquiones a través de un entramado formado por divisores (`^`).
 
-La solución se divide en dos componentes principales:
+El haz comienza en la posición marcada con `S` y siempre avanza hacia abajo. Cuando encuentra un divisor, el haz desaparece y genera dos nuevos haces que continúan desde las posiciones inmediatamente izquierda y derecha.
 
-* `TachyonManifold`: representa el mapa del problema y encapsula el acceso a la cuadrícula.
-* `BeamSimulation`: implementa la lógica de propagación de los haces.
-
-De esta forma el solver únicamente coordina la ejecución.
+- **Parte 1:** calcular cuántas veces un haz se divide.
+- **Parte 2:** calcular el número total de líneas temporales posibles, considerando que en cada divisor la partícula puede continuar únicamente hacia la izquierda o hacia la derecha.
 
 ---
 
-## 2. Simulación de los Haces
+## Algoritmos y técnicas
 
-**Enfoque: Reutilización de Lógica.**
-
-La simulación avanza fila a fila manteniendo el estado actual de los haces.
-
-* **Parte 1:** se almacena el conjunto de columnas activas (`Set<Integer>`), ya que solo interesa saber si existe un haz en una posición.
-* **Parte 2:** se utiliza un `Map<Integer, Long>` para contabilizar cuántas líneas temporales llegan a cada columna.
-
-Ambas partes reutilizan la misma lógica de propagación.
+- **BFS (Breadth-First Search):** la propagación de los haces se realiza mediante una cola de estados pendientes.
+- **Simulación de estados:** cada haz se representa como una posición independiente que evoluciona hasta abandonar el tablero o encontrar un divisor.
+- **Programación dinámica:** la segunda parte reutiliza resultados almacenados para evitar recalcular el número de líneas temporales desde una misma posición.
+- **Streams:** utilizados para localizar la posición inicial y procesar la entrada.
 
 ---
 
-## 3. Uso de Streams
+## Modelado en clases
 
-**Enfoque: Procesamiento Declarativo.**
-
-Los Streams se emplean para:
-
-* Localizar el punto de inicio.
-* Contar divisiones de los haces.
-* Generar las nuevas posiciones activas.
-* Calcular el número total de líneas temporales.
-
-Pipeline principal:
-
-```java
-activeColumns.stream()
-        .flatMap(column -> nextColumns(column, row).stream())
-        .filter(manifold::isInsideColumn)
-        .collect(Collectors.toSet());
-```
+| Clase | Responsabilidad |
+|--------|-----------------|
+| `TachyonManifold` | Representa el mapa y proporciona operaciones sobre sus posiciones. |
+| `BeamSimulation` | Implementa los algoritmos de propagación para ambas partes del problema. |
+| `Day07Solver` | Lee la entrada, crea el modelo y coordina la resolución. |
 
 ---
 
-## 4. Inyección de Dependencias
+## Diseño y principios aplicados
 
-**Enfoque: Dependency Inversion Principle (DIP).**
+### Single Responsibility Principle (SRP)
 
-El solver recibe una implementación de `InputSource` mediante constructor.
+Cada componente tiene una responsabilidad claramente definida:
 
-La simulación recibe un `TachyonManifold`, desacoplando completamente la lógica de propagación del origen de los datos.
+- `TachyonManifold` modela el tablero.
+- `BeamSimulation` implementa la simulación.
+- `Day07Solver` coordina la ejecución.
+
+### Encapsulación
+
+Toda la lógica relacionada con el recorrido del tablero permanece dentro de `TachyonManifold` y `BeamSimulation`.
+
+El solver nunca accede directamente a la representación interna del mapa.
+
+### DRY
+
+La lógica de exploración del tablero se reutiliza entre ambas partes.
+
+La diferencia reside únicamente en la información que se acumula durante la exploración (divisiones o número de líneas temporales).
+
+### Dependency Inversion Principle (DIP)
+
+El solver recibe un `InputSource` mediante el constructor, desacoplando completamente el algoritmo del mecanismo de lectura.
+
+### Streams
+
+Los Streams se utilizan durante la construcción del modelo y para localizar elementos relevantes del mapa, manteniendo un procesamiento declarativo de la entrada.
 
 ---
 
-## 5. Conclusiones
+## Resultados
 
-La solución prioriza:
-
-* Separación de responsabilidades.
-* Reutilización de la lógica entre ambas partes.
-* Uso de Streams.
-* Bajo acoplamiento entre componentes.
-
-El resultado es un diseño modular y fácilmente ampliable para futuras variantes de la simulación.
+| Parte | Respuesta |
+|--------|-----------|
+| 1 | **1649** |
+| 2 | **16937871060075** |

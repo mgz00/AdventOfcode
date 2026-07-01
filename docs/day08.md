@@ -1,78 +1,83 @@
-# DÍA 08: Junction Box Network
+# Día 8: Junction Box Network
 
-## 1. Modelado del Problema
+## Enunciado
 
-**Enfoque: Objetos de Dominio y SRP.**
+El octavo problema trabaja con una lista de cajas de conexión situadas en un espacio tridimensional. Cada caja tiene coordenadas `x,y,z`.
 
-La solución se divide en cuatro componentes principales:
+Los Elfos quieren conectar las cajas que están más cerca entre sí para formar circuitos eléctricos.
 
-* `JunctionBox`: representa una caja de conexiones y calcula la distancia a otra.
-* `Connection`: representa una conexión entre dos cajas.
-* `DisjointSet`: gestiona los circuitos mediante la estructura Union-Find.
-* `CircuitNetwork`: genera las conexiones y ejecuta el algoritmo de unión.
-
-Cada clase tiene una única responsabilidad, facilitando el mantenimiento y la reutilización del código.
+- **Parte 1:** conectar las 1000 parejas de cajas más cercanas y calcular el producto de los tamaños de los tres circuitos más grandes.
+- **Parte 2:** seguir conectando parejas por orden de distancia hasta que todas las cajas formen un único circuito. El resultado es el producto de las coordenadas `x` de las dos cajas de la última conexión necesaria.
 
 ---
 
-## 2. Algoritmo Union-Find
+## Algoritmos y técnicas
 
-**Enfoque: Gestión eficiente de componentes conexas.**
-
-Para conocer qué cajas pertenecen al mismo circuito se utiliza la estructura **Disjoint Set Union (Union-Find)**.
-
-Las uniones se realizan mediante:
-
-* **Path Compression** para acelerar las búsquedas.
-* **Union by Size** para mantener árboles equilibrados.
-
-Esto permite procesar miles de conexiones de forma eficiente.
+- **Generación de pares:** se generan todas las conexiones posibles entre cajas.
+- **Distancia euclídea al cuadrado:** se usa la distancia al cuadrado para comparar cercanía sin calcular raíces cuadradas.
+- **Ordenación por distancia:** las conexiones se procesan de menor a mayor distancia.
+- **Union-Find:** se utiliza una estructura de conjuntos disjuntos para mantener los circuitos conectados de forma eficiente.
+- **Path Compression y Union by Size:** optimizaciones aplicadas dentro de `DisjointSet`.
 
 ---
 
-## 3. Uso de Streams
+## Modelado en clases
 
-**Enfoque: Procesamiento Declarativo.**
+| Clase | Responsabilidad |
+|--------|-----------------|
+| `JunctionBox` | Representa una caja de conexión y calcula la distancia a otra caja. |
+| `Connection` | Representa una posible conexión entre dos cajas y su distancia. |
+| `DisjointSet` | Gestiona los componentes conexos mediante Union-Find. |
+| `CircuitNetwork` | Genera conexiones, las ordena y aplica las uniones necesarias. |
+| `Day08Solver` | Lee la entrada y coordina la resolución de ambas partes. |
 
-Los Streams se utilizan para:
+---
 
-* Leer las cajas de conexiones.
-* Generar todas las conexiones posibles.
-* Ordenarlas por distancia.
-* Calcular el producto de los circuitos más grandes.
+## Diseño y principios aplicados
 
-Pipeline principal:
+### Single Responsibility Principle (SRP)
+
+Cada clase encapsula una parte concreta del problema:
+
+- `JunctionBox` modela el punto 3D.
+- `Connection` modela una arista potencial.
+- `DisjointSet` gestiona la conectividad.
+- `CircuitNetwork` aplica el algoritmo sobre la red.
+
+### Encapsulación
+
+La estructura Union-Find queda completamente encapsulada dentro de `DisjointSet`.
+
+El resto del código no manipula directamente arrays de padres o tamaños, sino que usa operaciones de dominio como:
 
 ```java
-connections.stream()
-        .limit(connectionLimit)
-        .forEach(connection ->
-                disjointSet.union(
-                        connection.firstIndex(),
-                        connection.secondIndex()
-                )
-        );
+disjointSet.union(first, second)
+disjointSet.productOfLargestComponents(3)
 ```
 
+### Tell, Don't Ask
+
+La distancia entre dos cajas se calcula preguntando al propio objeto:
+
+```java
+firstBox.squaredDistanceTo(secondBox)
+```
+
+en lugar de extraer manualmente sus coordenadas fuera de la clase.
+
+### Dependency Inversion Principle (DIP)
+
+El solver recibe un `InputSource` mediante constructor, por lo que la lógica de red no depende del origen concreto de los datos.
+
+### Streams
+
+Los Streams se utilizan para generar combinaciones de cajas, ordenar conexiones y calcular el producto de los componentes principales.
+
 ---
 
-## 4. Inyección de Dependencias
+## Resultados
 
-**Enfoque: Dependency Inversion Principle (DIP).**
-
-El solver recibe una implementación de `InputSource` mediante constructor.
-
-La lógica del algoritmo queda desacoplada del origen de los datos, facilitando las pruebas unitarias.
-
----
-
-## 5. Conclusiones
-
-La solución prioriza:
-
-* Separación de responsabilidades.
-* Uso de la estructura Union-Find para gestionar circuitos.
-* Uso de Streams.
-* Bajo acoplamiento entre componentes.
-
-El resultado es un diseño modular, eficiente y fácilmente ampliable.
+| Parte | Respuesta |
+|--------|-----------|
+| 1 | **50568** |
+| 2 | **36045012** |

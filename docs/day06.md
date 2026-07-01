@@ -1,72 +1,93 @@
-# DÍA 06: Math Worksheet
+# Día 6: Cephalopod Math Worksheet
 
-## 1. Modelado del Problema
+## Enunciado
 
-**Enfoque: Separación de Responsabilidades (SRP).**
+El sexto problema consiste en interpretar una hoja de operaciones matemáticas escrita en un formato poco habitual. Cada operación está representada mediante columnas de números y un operador (`+` o `*`) situado en la parte inferior.
 
-La solución se divide en varios componentes:
+- **Parte 1:** los números se leen de forma convencional, de arriba hacia abajo.
+- **Parte 2:** los números deben reconstruirse leyendo las columnas de derecha a izquierda, siguiendo las reglas de la numeración cefalópoda.
 
-* `MathProblem`: representa una operación matemática y calcula su resultado.
-* `Worksheet`: agrupa todos los problemas de la hoja y calcula el total.
-* `WorksheetParser`: identifica los bloques de la hoja de cálculo.
-* `RowProblemParser` y `ColumnProblemParser`: implementan distintas estrategias de lectura.
-
-Cada clase tiene una única responsabilidad, facilitando el mantenimiento y la reutilización del código.
+Una vez reconstruidas todas las operaciones, se evalúan y se obtiene la suma de sus resultados.
 
 ---
 
-## 2. Estrategias de Lectura
+## Algoritmos y técnicas
 
-**Enfoque: Open/Closed Principle (OCP).**
-
-Las dos partes del ejercicio únicamente cambian la forma de interpretar cada bloque.
-
-Para desacoplar ambas soluciones se utiliza la interfaz `ProblemParser`, con dos implementaciones:
-
-* `RowProblemParser` → lectura por filas (Parte 1).
-* `ColumnProblemParser` → lectura por columnas (Parte 2).
-
-De esta forma el parser principal permanece inalterado.
+- **Parsing estructurado:** la hoja se divide en problemas independientes a partir de las columnas vacías.
+- **Strategy Pattern:** cada parte utiliza una estrategia distinta para interpretar los números.
+- **Reutilización del modelo:** ambas partes comparten las clases de dominio, cambiando únicamente el parser empleado.
+- **Streams:** utilizados para procesar las operaciones y calcular la suma final.
 
 ---
 
-## 3. Uso de Streams
+## Modelado en clases
 
-**Enfoque: Procesamiento Declarativo.**
+| Clase | Responsabilidad |
+|--------|-----------------|
+| `MathProblem` | Representa una operación matemática y conoce cómo evaluarla. |
+| `Worksheet` | Agrupa todos los problemas de la hoja y calcula el resultado total. |
+| `WorksheetParser` | Coordina el proceso de lectura de la hoja utilizando un parser especializado. |
+| `RowProblemParser` | Reconstruye los números siguiendo la lectura de la parte 1. |
+| `ColumnProblemParser` | Reconstruye los números siguiendo la lectura de la parte 2. |
+| `ColumnRange` | Representa los límites de una operación dentro de la hoja. |
+| `ProblemParser` | Abstracción común para las distintas estrategias de lectura. |
+| `Day06Solver` | Coordina ambas partes del ejercicio. |
 
-Los Streams se utilizan para:
+---
 
-* Detectar columnas vacías.
-* Calcular el resultado de cada problema.
-* Obtener el total de la hoja.
+## Diseño y principios aplicados
 
-Pipeline principal:
+### Single Responsibility Principle (SRP)
+
+Cada clase desempeña una función concreta:
+
+- `MathProblem` representa una operación.
+- `Worksheet` gestiona el conjunto de problemas.
+- `WorksheetParser` organiza el proceso de lectura.
+- Cada implementación de `ProblemParser` interpreta un formato distinto.
+
+### Open/Closed Principle (OCP)
+
+El parser principal trabaja contra la abstracción `ProblemParser`.
+
+Esto permite incorporar nuevas formas de interpretar la hoja sin modificar `WorksheetParser`, únicamente añadiendo una nueva implementación.
+
+### Strategy Pattern
+
+La diferencia entre ambas partes se implementa mediante dos estrategias independientes:
+
+- `RowProblemParser`
+- `ColumnProblemParser`
+
+Ambas comparten la misma interfaz y pueden intercambiarse de forma transparente.
+
+### Dependency Inversion Principle (DIP)
+
+`WorksheetParser` depende de la abstracción `ProblemParser` en lugar de depender directamente de una implementación concreta.
+
+Además, `Day06Solver` recibe el `InputSource` mediante inyección por constructor.
+
+### DRY
+
+Toda la lógica común de lectura de la hoja se concentra en `WorksheetParser`.
+
+Las diferencias entre ambas partes quedan aisladas en las implementaciones de `ProblemParser`, evitando duplicación de código.
+
+### Streams
+
+Los Streams permiten expresar el cálculo del resultado de forma declarativa:
 
 ```java
 worksheet.problems().stream()
-        .mapToLong(MathProblem::compute)
+        .mapToLong(MathProblem::solve)
         .sum();
 ```
 
 ---
 
-## 4. Inyección de Dependencias
+## Resultados
 
-**Enfoque: Dependency Inversion Principle (DIP).**
-
-El solver recibe una implementación de `InputSource` mediante constructor.
-
-Además, `WorksheetParser` depende de la abstracción `ProblemParser`, permitiendo cambiar la estrategia de lectura sin modificar su funcionamiento.
-
----
-
-## 5. Conclusiones
-
-La solución prioriza:
-
-* Separación de responsabilidades.
-* Uso del patrón Strategy para soportar distintos modos de lectura.
-* Uso de Streams.
-* Bajo acoplamiento entre componentes.
-
-El resultado es un diseño modular y fácilmente ampliable para nuevas formas de interpretar la hoja de cálculo.
+| Parte | Respuesta |
+|--------|-----------|
+| 1 | **5316572080628** |
+| 2 | **11299263623062** |

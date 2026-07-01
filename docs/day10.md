@@ -1,72 +1,86 @@
-# DÍA 10: Factory Machines
+# Día 10: Factory Machines
 
-## 1. Modelado del Problema
+## Enunciado
 
-**Enfoque: Separación de Responsabilidades (SRP).**
+El décimo problema trabaja con máquinas que tienen luces indicadoras, botones y requisitos de voltaje.
 
-La solución se divide en varios componentes:
+Cada línea de entrada describe una máquina:
 
-* `Button`: representa un botón y los elementos que modifica.
-* `Machine`: almacena el estado objetivo de una máquina y sus botones.
-* `MachineParser`: interpreta cada línea del fichero de entrada.
-* `IndicatorSolver`: resuelve la configuración de las luces (Parte 1).
-* `JoltageSolver`: resuelve la configuración de los contadores de voltaje (Parte 2).
+- Un patrón objetivo de luces entre corchetes.
+- Una serie de botones entre paréntesis.
+- Una lista de requisitos de voltaje entre llaves.
 
-Cada clase tiene una única responsabilidad, facilitando el mantenimiento y la reutilización del código.
-
----
-
-## 2. Estrategias de Resolución
-
-**Enfoque: Algoritmos independientes.**
-
-Las dos partes del problema requieren técnicas diferentes:
-
-* **Parte 1:** se prueban todas las combinaciones posibles de botones utilizando máscaras de bits para encontrar el menor número de pulsaciones.
-* **Parte 2:** se aplica un algoritmo recursivo con memoización sobre vectores de voltaje para minimizar el número total de pulsaciones.
-
-Ambos algoritmos permanecen completamente desacoplados.
+- **Parte 1:** ignorando los voltajes, calcular el número mínimo de pulsaciones necesarias para conseguir el patrón objetivo de luces.
+- **Parte 2:** ignorando las luces, calcular el número mínimo de pulsaciones necesarias para alcanzar exactamente los valores de voltaje requeridos.
 
 ---
 
-## 3. Uso de Streams
+## Algoritmos y técnicas
 
-**Enfoque: Procesamiento Declarativo.**
-
-Los Streams se utilizan para:
-
-* Leer y parsear las máquinas.
-* Generar las combinaciones de botones.
-* Construir máscaras binarias.
-* Calcular el resultado total de todas las máquinas.
-
-Pipeline principal:
-
-```java
-machines.stream()
-        .mapToLong(indicatorSolver::minimumPresses)
-        .sum();
-```
+- **Máscaras de bits:** en la parte 1 cada botón se representa como una máscara binaria de luces afectadas.
+- **Fuerza bruta acotada:** se prueban todas las combinaciones de botones para encontrar la de menor número de pulsaciones.
+- **Vectores de voltaje:** en la parte 2 los requisitos se modelan como vectores de enteros grandes.
+- **Recursión con memoización:** se evita recalcular subproblemas ya resueltos durante la búsqueda de la mínima cantidad de pulsaciones.
+- **Agrupación por paridad:** se precomputan patrones de botones agrupados según la paridad de sus vectores para reducir candidatos.
 
 ---
 
-## 4. Inyección de Dependencias
+## Modelado en clases
 
-**Enfoque: Dependency Inversion Principle (DIP).**
-
-El solver recibe una implementación de `InputSource` mediante constructor.
-
-Además, la lógica de resolución se delega en `IndicatorSolver` y `JoltageSolver`, manteniendo desacoplado el procesamiento de la entrada de los algoritmos utilizados.
+| Clase | Responsabilidad |
+|--------|-----------------|
+| `Button` | Representa los índices afectados por un botón. |
+| `Machine` | Agrupa el patrón objetivo, los botones y el vector objetivo de voltaje. |
+| `MachineParser` | Interpreta cada línea de entrada y construye máquinas. |
+| `IndicatorSolver` | Resuelve la parte de luces mediante máscaras de bits. |
+| `JoltageVector` | Encapsula operaciones vectoriales necesarias para la parte 2. |
+| `JoltageSolver` | Resuelve la parte de voltajes mediante recursión y memoización. |
+| `Day10Solver` | Lee la entrada y coordina ambas partes. |
 
 ---
 
-## 5. Conclusiones
+## Diseño y principios aplicados
 
-La solución prioriza:
+### Single Responsibility Principle (SRP)
 
-* Separación de responsabilidades.
-* Algoritmos independientes para cada parte del problema.
-* Uso de Streams.
-* Bajo acoplamiento entre componentes.
+Cada clase tiene una función específica:
 
-El resultado es un diseño modular, reutilizable y fácilmente ampliable.
+- `MachineParser` solo parsea.
+- `IndicatorSolver` solo resuelve luces.
+- `JoltageSolver` solo resuelve voltajes.
+- `JoltageVector` encapsula operaciones matemáticas sobre vectores.
+
+### Open/Closed Principle (OCP)
+
+Las dos partes se resuelven mediante algoritmos independientes (`IndicatorSolver` y `JoltageSolver`).
+
+Esto permite modificar o sustituir una estrategia de resolución sin afectar a la otra ni al solver principal.
+
+### DRY
+
+La lectura de máquinas se realiza una sola vez en `Day10Solver`.
+
+Además, las operaciones vectoriales comunes se concentran en `JoltageVector`, evitando repetir lógica matemática dentro del algoritmo principal.
+
+### Dependency Inversion Principle (DIP)
+
+`Day10Solver` recibe un `InputSource` por constructor, desacoplando la resolución del origen concreto de los datos.
+
+### Inmutabilidad
+
+`Machine`, `Button` y `JoltageVector` se modelan como objetos de dominio inmutables.
+
+Las listas internas se protegen mediante `List.copyOf`, evitando modificaciones externas no controladas.
+
+### Streams
+
+Los Streams se utilizan para parsear las máquinas, generar combinaciones, transformar botones en máscaras o vectores y sumar los resultados de todas las máquinas.
+
+---
+
+## Resultados
+
+| Parte | Respuesta |
+|--------|-----------|
+| 1 | **545** |
+| 2 | **22430** |
